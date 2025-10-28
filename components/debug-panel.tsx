@@ -27,14 +27,21 @@ export function DebugPanel() {
     checkApi()
   }, [])
 
-  // Only show in development
-  if (process.env.NODE_ENV === 'production') return null
-
+  // Show on all environments for debugging
   return (
-    <div className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-lg text-xs max-w-md z-50">
-      <div><strong>API URL:</strong> {apiUrl}</div>
-      <div><strong>Status:</strong> {apiStatus}</div>
-      <div><strong>Environment:</strong> {process.env.NODE_ENV}</div>
+    <div className="fixed top-2 left-2 bg-red-600 text-white p-2 rounded text-xs max-w-xs z-50 shadow-lg">
+      <div className="font-bold mb-1">🐛 DEBUG</div>
+      <div className="space-y-1 text-xs">
+        <div><strong>API:</strong> {apiUrl.replace('https://', '')}</div>
+        <div><strong>Status:</strong> {apiStatus.substring(0, 20)}...</div>
+        <div><strong>Device:</strong> {typeof navigator !== 'undefined' ? (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop') : 'Unknown'}</div>
+      </div>
+      <button 
+        onClick={() => window.location.reload()} 
+        className="mt-1 bg-white text-red-600 px-2 py-1 rounded text-xs w-full"
+      >
+        Reload
+      </button>
     </div>
   )
 }

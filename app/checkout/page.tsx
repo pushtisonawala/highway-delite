@@ -134,16 +134,16 @@ export default function CheckoutPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <button
           onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-900 mb-6 flex items-center gap-2"
+          className="text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 flex items-center gap-2 text-sm sm:text-base"
         >
-          ← Checkout
+          ← Back
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+          <div className="lg:col-span-2 order-1">
             <CheckoutForm 
               formData={formData} 
               errors={errors} 
@@ -154,10 +154,10 @@ export default function CheckoutPage() {
             />
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg border border-gray-300 p-6 sticky top-8">
-              <h3 className="font-semibold text-gray-900 mb-4">Experience</h3>
-              <div className="space-y-3 text-sm text-gray-600 mb-6">
+          <div className="lg:col-span-1 order-2">
+            <div className="bg-white rounded-lg border border-gray-300 p-4 sm:p-6 lg:sticky lg:top-8">
+              <h3 className="font-semibold text-gray-900 mb-4 text-base sm:text-lg">Experience Summary</h3>
+              <div className="space-y-2 sm:space-y-3 text-sm text-gray-600 mb-4 sm:mb-6">
                 <div className="flex justify-between">
                   <span>Experience</span>
                   <span className="font-medium text-gray-900">{experience.title}</span>

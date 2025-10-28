@@ -24,8 +24,8 @@ export function PriceSummary({
   const total = afterDiscount + tax
 
   return (
-    <div className="bg-white rounded-lg border border-gray-300 p-6 sticky top-8">
-      <div className="space-y-3 mb-6">
+    <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Starts at</span>
           <span className="font-medium text-gray-900">₹{price}</span>
@@ -34,7 +34,7 @@ export function PriceSummary({
           <span className="text-gray-600">Quantity</span>
           <span className="font-medium text-gray-900">{quantity}</span>
         </div>
-        <div className="border-t border-gray-200 pt-3 flex justify-between text-sm">
+        <div className="border-t border-gray-200 pt-2 sm:pt-3 flex justify-between text-sm">
           <span className="text-gray-600">Subtotal</span>
           <span className="font-medium text-gray-900">₹{subtotal}</span>
         </div>
@@ -48,16 +48,16 @@ export function PriceSummary({
           <span className="text-gray-600">Taxes</span>
           <span className="font-medium text-gray-900">₹{tax}</span>
         </div>
-        <div className="border-t border-gray-200 pt-3 flex justify-between">
+        <div className="border-t border-gray-200 pt-2 sm:pt-3 flex justify-between">
           <span className="font-semibold text-gray-900">Total</span>
-          <span className="font-bold text-lg text-gray-900">₹{total}</span>
+          <span className="font-bold text-base sm:text-lg text-gray-900">₹{total}</span>
         </div>
       </div>
 
       <button
         onClick={onConfirm}
         disabled={disabled}
-        className="w-full py-3 bg-yellow-400 text-gray-900 font-semibold rounded hover:bg-yellow-500 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="w-full py-3 sm:py-3 text-sm sm:text-base bg-yellow-400 text-gray-900 font-semibold rounded hover:bg-yellow-500 transition disabled:bg-gray-300 disabled:cursor-not-allowed touch-manipulation"
       >
         {buttonText}
       </button>
