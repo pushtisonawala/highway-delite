@@ -104,6 +104,49 @@ npm run dev
 
 The frontend will start on `http://localhost:3000` (or `http://localhost:3001` if 3000 is occupied)
 
+### 📱 Mobile Device Testing
+
+To test the application on your mobile device:
+
+#### 1. Find Your Local IP Address
+
+**Windows:**
+```bash
+# Run the IP detection script
+scripts\get-local-ip.bat
+
+# Or manually check
+ipconfig
+```
+
+**Mac/Linux:**
+```bash
+# Run the IP detection script
+chmod +x scripts/get-local-ip.sh
+./scripts/get-local-ip.sh
+
+# Or manually check
+ifconfig | grep inet
+```
+
+#### 2. Configure for Mobile Access
+
+The backend is already configured to accept connections from local network devices. Make sure both your computer and mobile device are on the same WiFi network.
+
+#### 3. Access from Mobile
+
+Replace `localhost` with your local IP address:
+- **Frontend**: `http://192.168.1.100:3000` (replace with your IP)
+- **Backend**: `http://192.168.1.100:5000` (replace with your IP)
+
+**Note**: If you need to configure a custom API URL for mobile testing, create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_API_URL=http://192.168.1.100:5000/api
+```
+
+Replace `192.168.1.100` with your actual local IP address.
+
 ### Production Mode
 
 #### 1. Build the Frontend
