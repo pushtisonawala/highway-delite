@@ -5,12 +5,23 @@ interface PriceSummaryProps {
   quantity: number
   onConfirm: () => void
   buttonText?: string
+  disabled?: boolean
+  promoDiscount?: number
 }
 
-export function PriceSummary({ price, quantity, onConfirm, buttonText = "Confirm" }: PriceSummaryProps) {
+export function PriceSummary({ 
+  price, 
+  quantity, 
+  onConfirm, 
+  buttonText = "Confirm",
+  disabled = false,
+  promoDiscount = 0
+}: PriceSummaryProps) {
   const subtotal = price * quantity
-  const tax = Math.round(subtotal * 0.06)
-  const total = subtotal + tax
+  const discount = promoDiscount
+  const afterDiscount = subtotal - discount
+  const tax = Math.round(afterDiscount * 0.06)
+  const total = afterDiscount + tax
 
   return (
     <div className="bg-white rounded-lg border border-gray-300 p-6 sticky top-8">
@@ -27,6 +38,12 @@ export function PriceSummary({ price, quantity, onConfirm, buttonText = "Confirm
           <span className="text-gray-600">Subtotal</span>
           <span className="font-medium text-gray-900">₹{subtotal}</span>
         </div>
+        {discount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-green-600">Promo Discount</span>
+            <span className="font-medium text-green-600">-₹{discount}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Taxes</span>
           <span className="font-medium text-gray-900">₹{tax}</span>
@@ -39,7 +56,8 @@ export function PriceSummary({ price, quantity, onConfirm, buttonText = "Confirm
 
       <button
         onClick={onConfirm}
-        className="w-full py-3 bg-yellow-400 text-gray-900 font-semibold rounded hover:bg-yellow-500 transition"
+        disabled={disabled}
+        className="w-full py-3 bg-yellow-400 text-gray-900 font-semibold rounded hover:bg-yellow-500 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         {buttonText}
       </button>

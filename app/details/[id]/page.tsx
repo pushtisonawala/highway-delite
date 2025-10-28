@@ -1,27 +1,59 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { DetailsView } from "@/components/details-view"
 import { PriceSummary } from "@/components/price-summary"
-import { MOCK_EXPERIENCES } from "@/lib/mock-data"
+import { api } from "@/lib/api"
+import type { Experience, Slot } from "@/lib/types"
 
 export default function DetailsPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
 
-  const experience = MOCK_EXPERIENCES.find((exp) => exp.id === id)
-  const [selectedDate, setSelectedDate] = useState("Oct 22")
-  const [selectedTime, setSelectedTime] = useState("09:00 am")
+  const [experience, setExperience] = useState<Experience | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
   const [quantity, setQuantity] = useState(1)
+
+  useEffect(() => {
+    const fetchExperience = async () => {
+      try {
+        const data = await api.getExperienceById(id)
+        setExperience(data)
+        // Auto-select first available slot
+        if (data.slots && data.slots.length > 0) {
+          setSelectedSlot(data.slots[0])
+        }
+      } catch (error) {
+        console.error("Failed to fetch experience:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchExperience()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    )
+  }
 
   if (!experience) {
     return <div className="text-center py-12">Experience not found</div>
   }
 
   const handleCheckout = () => {
-    router.push(`/checkout?experience=${id}&date=${selectedDate}&time=${selectedTime}&qty=${quantity}`)
+    if (!selectedSlot) {
+      alert("Please select a time slot")
+      return
+    }
+    router.push(`/checkout?experience=${id}&slotId=${selectedSlot.id}&qty=${quantity}`)
   }
 
   return (
@@ -38,11 +70,10 @@ export default function DetailsPage() {
           <div className="lg:col-span-2">
             <DetailsView
               experience={experience}
-              selectedDate={selectedDate}
-              selectedTime={selectedTime}
+              slots={experience.slots || []}
+              selectedSlot={selectedSlot}
               quantity={quantity}
-              onDateChange={setSelectedDate}
-              onTimeChange={setSelectedTime}
+              onSlotChange={setSelectedSlot}
               onQuantityChange={setQuantity}
             />
           </div>

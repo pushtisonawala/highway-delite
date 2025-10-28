@@ -1,26 +1,50 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CheckoutForm } from "@/components/checkout-form"
 import { PriceSummary } from "@/components/price-summary"
-import { MOCK_EXPERIENCES } from "@/lib/mock-data"
+import { api } from "@/lib/api"
+import type { Experience, PromoValidationResponse } from "@/lib/types"
 
 export default function CheckoutPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const experienceId = searchParams.get("experience")
+  const slotId = searchParams.get("slotId")
   const quantity = Number.parseInt(searchParams.get("qty") || "1")
 
-  const experience = MOCK_EXPERIENCES.find((exp) => exp.id === experienceId)
+  const [experience, setExperience] = useState<Experience | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    phone: "",
     promoCode: "",
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [promoValidation, setPromoValidation] = useState<PromoValidationResponse | null>(null)
+  const [promoApplied, setPromoApplied] = useState(false)
+
+  useEffect(() => {
+    const fetchExperience = async () => {
+      if (!experienceId) return
+      
+      try {
+        const data = await api.getExperienceById(experienceId)
+        setExperience(data)
+      } catch (error) {
+        console.error("Failed to fetch experience:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchExperience()
+  }, [experienceId])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -35,19 +59,78 @@ export default function CheckoutPage() {
       newErrors.email = "Invalid email format"
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handlePayment = () => {
-    if (validateForm()) {
-      router.push("/confirmation")
+  const handlePromoValidation = async (code: string) => {
+    if (!code.trim() || !experience) return
+
+    try {
+      const subtotal = experience.price * quantity
+      const validation = await api.validatePromo(code.toUpperCase(), subtotal)
+      setPromoValidation(validation)
+      setPromoApplied(true)
+      return validation
+    } catch (error: any) {
+      setPromoValidation({ valid: false, error: error.message || "Invalid promo code" })
+      setPromoApplied(false)
+      throw error
     }
   }
 
-  if (!experience) {
+  const handlePayment = async () => {
+    if (!validateForm() || !experienceId || !slotId || !experience) {
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const subtotal = experience.price * quantity
+      const finalAmount = promoApplied && promoValidation?.finalAmount 
+        ? promoValidation.finalAmount 
+        : subtotal
+
+      const booking = await api.createBooking({
+        experienceId,
+        slotId,
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        participants: quantity,
+        totalPrice: finalAmount,
+        promoCode: promoApplied ? formData.promoCode : undefined,
+      })
+
+      // Store booking ID in session storage for confirmation page
+      sessionStorage.setItem('lastBooking', JSON.stringify(booking))
+      
+      router.push("/confirmation")
+    } catch (error: any) {
+      alert(error.message || "Failed to create booking. Please try again.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    )
+  }
+
+  if (!experience || !slotId) {
     return <div className="text-center py-12">Experience not found</div>
   }
+
+  const selectedSlot = experience.slots?.find(s => s.id === slotId)
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -61,7 +144,14 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <CheckoutForm formData={formData} errors={errors} onFormChange={setFormData} />
+            <CheckoutForm 
+              formData={formData} 
+              errors={errors} 
+              onFormChange={setFormData}
+              onPromoValidate={handlePromoValidation}
+              promoValidation={promoValidation}
+              promoApplied={promoApplied}
+            />
           </div>
 
           <div className="lg:col-span-1">
@@ -72,14 +162,20 @@ export default function CheckoutPage() {
                   <span>Experience</span>
                   <span className="font-medium text-gray-900">{experience.title}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Date</span>
-                  <span className="font-medium text-gray-900">{searchParams.get("date")}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Time</span>
-                  <span className="font-medium text-gray-900">{searchParams.get("time")}</span>
-                </div>
+                {selectedSlot && (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Date</span>
+                      <span className="font-medium text-gray-900">
+                        {new Date(selectedSlot.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Time</span>
+                      <span className="font-medium text-gray-900">{selectedSlot.startTime}</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between">
                   <span>Qty</span>
                   <span className="font-medium text-gray-900">{quantity}</span>
@@ -90,7 +186,9 @@ export default function CheckoutPage() {
                 price={experience.price}
                 quantity={quantity}
                 onConfirm={handlePayment}
-                buttonText="Pay and Confirm"
+                buttonText={submitting ? "Processing..." : "Pay and Confirm"}
+                disabled={submitting}
+                promoDiscount={promoApplied && promoValidation?.discountAmount ? promoValidation.discountAmount : 0}
               />
             </div>
           </div>
