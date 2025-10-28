@@ -9,11 +9,9 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// GET /experiences - Return list of experiences
 app.get('/api/experiences', async (req: Request, res: Response) => {
   try {
     const experiences = await prisma.experience.findMany({

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { ExperienceCard } from "@/components/experience-card"
-import { Header } from "@/components/header"
+import { useSearch } from "@/components/search-provider"
 import { api } from "@/lib/api"
 import type { Experience } from "@/lib/types"
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const { setOnSearch } = useSearch()
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [filteredExperiences, setFilteredExperiences] = useState<Experience[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,22 +29,26 @@ export default function Home() {
   }, [])
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (query.trim() === "") {
+    const searchTerm = query || ""
+    if (searchTerm.trim() === "") {
       setFilteredExperiences(experiences)
     } else {
       const filtered = experiences.filter(
         (exp) =>
-          exp.title.toLowerCase().includes(query.toLowerCase()) ||
-          exp.location.toLowerCase().includes(query.toLowerCase()),
+          exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          exp.location.toLowerCase().includes(searchTerm.toLowerCase()),
       )
       setFilteredExperiences(filtered)
     }
   }
 
+  // Set the search handler in the context
+  useEffect(() => {
+    setOnSearch(handleSearch)
+  }, [experiences, setOnSearch])
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <Header onSearch={handleSearch} />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center py-12">
