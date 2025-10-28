@@ -1,5 +1,5 @@
 // API configuration
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://highway-delite-v1ur.onrender.com/api';
 
 // API endpoints
 export const API_ENDPOINTS = {
@@ -14,16 +14,38 @@ export const API_ENDPOINTS = {
 export const api = {
   // Get all experiences
   getExperiences: async () => {
-    const res = await fetch(API_ENDPOINTS.experiences);
-    if (!res.ok) throw new Error('Failed to fetch experiences');
-    return res.json();
+    try {
+      console.log('Fetching experiences from:', API_ENDPOINTS.experiences);
+      const res = await fetch(API_ENDPOINTS.experiences);
+      if (!res.ok) {
+        console.error('API Error:', res.status, res.statusText);
+        throw new Error(`Failed to fetch experiences: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+      console.log('Experiences fetched successfully:', data.length, 'items');
+      return data;
+    } catch (error) {
+      console.error('Error fetching experiences:', error);
+      throw error;
+    }
   },
 
   // Get experience by ID with slots
   getExperienceById: async (id: string) => {
-    const res = await fetch(API_ENDPOINTS.experienceById(id));
-    if (!res.ok) throw new Error('Failed to fetch experience');
-    return res.json();
+    try {
+      console.log('Fetching experience by ID:', id, 'from:', API_ENDPOINTS.experienceById(id));
+      const res = await fetch(API_ENDPOINTS.experienceById(id));
+      if (!res.ok) {
+        console.error('API Error:', res.status, res.statusText);
+        throw new Error(`Failed to fetch experience: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+      console.log('Experience fetched successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching experience by ID:', error);
+      throw error;
+    }
   },
 
   // Create booking

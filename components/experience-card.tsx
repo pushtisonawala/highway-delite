@@ -11,10 +11,28 @@ interface ExperienceCardProps {
 export function ExperienceCard({ experience }: ExperienceCardProps) {
   const router = useRouter()
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    try {
+      router.push(`/details/${experience.id}`)
+    } catch (error) {
+      console.error('Navigation error:', error)
+      // Fallback to window.location for compatibility
+      window.location.href = `/details/${experience.id}`
+    }
+  }
+
   return (
     <div
       className="bg-white rounded-lg overflow-hidden border-2 border-gray-200 hover:shadow-lg transition cursor-pointer"
-      onClick={() => router.push(`/details/${experience.id}`)}
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleCardClick(e as any)
+        }
+      }}
     >
       <div className="relative h-40 bg-gray-200">
         <Image src={experience.image || "/placeholder.svg"} alt={experience.title} fill className="object-cover" />

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Header } from '@/components/header'
 import { SearchProvider } from '@/components/search-provider'
+import { DebugPanel } from '@/components/debug-panel'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -26,6 +27,7 @@ export default function RootLayout({
           <Header />
           {children}
         </SearchProvider>
+        <DebugPanel />
         <Analytics />
       </body>
     </html>
